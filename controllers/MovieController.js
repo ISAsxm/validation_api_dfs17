@@ -1,4 +1,5 @@
 const Movie = require("../models").Movie
+const Producer = require("../models").Producer
 
 class MovieController {
   async list(size, page) {
@@ -6,6 +7,7 @@ class MovieController {
     const limit = size ? +size : 5
     const offset = page ? page : 1
     return Movie.findAndCountAll({
+      include: [{ model: Producer, required: true }],
       limit: limit,
       offset: offset,
     })
