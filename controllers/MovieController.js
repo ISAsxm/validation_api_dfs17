@@ -5,7 +5,7 @@ const { Op } = require("sequelize")
 
 class MovieController {
   async search(search) {
-    //   http://localhost:3000/api/movies/search?title=Happy Weekend
+    //  for research on attribut title http://localhost:3000/api/movies/search?title=Happy Weekend
     return Movie.findAll({
       include: [
         { model: Producer, required: true },
@@ -24,11 +24,11 @@ class MovieController {
   }
 
   async list(size, page) {
-    //   set to http://localhost:3000/api/movies/?page=1&size=5 by default
+    //  for paginate and limit set to http://localhost:3000/api/movies/?page=0&size=5 by default
     const limit = size ? +size : 5
-    const offset = page ? page : 1
+    const offset = page ? page : 0
 
-    //  queryString http://localhost:3000/api/movies?genre=Comedy&year=2003
+    //  for filtering with queryString http://localhost:3000/api/movies?genre=Comedy&year=2003 (not finished yet)
     return Movie.findAndCountAll({
       include: [
         { model: Producer, required: true },
@@ -36,6 +36,10 @@ class MovieController {
       ],
       limit: limit,
       offset: offset,
+      order: [
+        ["id", "DESC"],
+        ["year", "ASC"],
+      ],
     })
       .then((result) => {
         const lastPage = parseInt(result.count) / parseInt(size)
