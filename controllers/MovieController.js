@@ -1,5 +1,6 @@
 const Movie = require("../models").Movie
 const Producer = require("../models").Producer
+const Genre = require("../models").Genre
 
 class MovieController {
   async list(size, page) {
@@ -7,7 +8,10 @@ class MovieController {
     const limit = size ? +size : 5
     const offset = page ? page : 1
     return Movie.findAndCountAll({
-      include: [{ model: Producer, required: true }],
+      include: [
+        { model: Producer, required: true },
+        { model: Genre, required: true },
+      ],
       limit: limit,
       offset: offset,
     })
@@ -46,7 +50,13 @@ class MovieController {
   }
 
   async retrieve(id) {
-    return Movie.findByPk(id)
+    return Movie.findOne({
+      where: { id: id },
+      include: [
+        { model: Producer, required: true },
+        { model: Genre, required: true },
+      ],
+    })
   }
 
   async create(Movie) {

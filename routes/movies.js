@@ -9,4 +9,8 @@ router.get("/movies", async (req, res, next) => {
   res.json(await MovieController.list(size, page))
 })
 
+router.get("/movies/:id", async (req, res, next) => {
+  res.json(await MovieController.retrieve(req.params.id))
+})
+
 module.exports = router
