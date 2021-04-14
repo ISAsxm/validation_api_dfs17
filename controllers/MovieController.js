@@ -7,6 +7,10 @@ class MovieController {
   async search(search) {
     //   http://localhost:3000/api/movies/search?title=Happy Weekend
     return Movie.findAll({
+      include: [
+        { model: Producer, required: true },
+        { model: Genre, required: true },
+      ],
       where: {
         title: { [Op.like]: `%${search}` },
       },
@@ -24,6 +28,7 @@ class MovieController {
     const limit = size ? +size : 5
     const offset = page ? page : 1
 
+    //  queryString http://localhost:3000/api/movies?genre=Comedy&year=2003
     return Movie.findAndCountAll({
       include: [
         { model: Producer, required: true },
