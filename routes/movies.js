@@ -3,10 +3,12 @@ const MovieController = require("../controllers").MovieController
 let express = require("express")
 let router = express.Router()
 
+router.get("/movies/search", async (req, res, next) => {
+  res.json(await MovieController.search(req.query.title))
+})
+
 router.get("/movies", async (req, res, next) => {
-  const size = req.query.size
-  const page = req.query.page
-  res.json(await MovieController.list(size, page))
+  res.json(await MovieController.list(req.query.size, req.query.page))
 })
 
 router.get("/movies/:id", async (req, res, next) => {

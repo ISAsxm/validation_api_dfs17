@@ -1,12 +1,29 @@
 const Movie = require("../models").Movie
 const Producer = require("../models").Producer
 const Genre = require("../models").Genre
+const { Op } = require("sequelize")
 
 class MovieController {
+  async search(search) {
+    //   http://localhost:3000/api/movies/search?title=Happy Weekend
+    return Movie.findAll({
+      where: {
+        title: { [Op.like]: `%${search}` },
+      },
+    })
+      .then((result) => {
+        return result
+      })
+      .catch((err) => {
+        console.log(err)
+      })
+  }
+
   async list(size, page) {
     //   set to http://localhost:3000/api/movies/?page=1&size=5 by default
     const limit = size ? +size : 5
     const offset = page ? page : 1
+
     return Movie.findAndCountAll({
       include: [
         { model: Producer, required: true },
