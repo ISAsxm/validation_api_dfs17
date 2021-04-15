@@ -23,17 +23,50 @@ class MovieController {
       })
   }
 
-  async list(size, page) {
+  async list(size, page, query) {
+    //  for filtering with queryString http://localhost:3000/api/movies?page=0&size=5&firstName=Rosina&lastName=Jerred&name=Comedy&year=2003
+    const queryString = { ...query }
+    const notSearchFields = ["size", "page"]
+    notSearchFields.forEach((f) => delete queryString[f])
+
+    const producerSearchFields = ["firstName", "lastName"]
+    const producerFilter = {}
+    producerSearchFields.forEach((f) => {
+      if (queryString[f]) {
+        producerFilter[f] = queryString[f]
+        delete queryString[f]
+      }
+    })
+    const categorySearchField = ["name"]
+    const categoryFilter = { name: "" }
+    categorySearchField.forEach((f) => {
+      if (queryString[f]) {
+        categoryFilter[f] = queryString[f]
+        delete queryString[f]
+      }
+    })
+    const movieFilter = queryString ? queryString : {}
+    console.log(movieFilter, categoryFilter, producerFilter)
     //  for paginate and limit set to http://localhost:3000/api/movies/?page=0&size=5 by default
     const limit = size ? +size : 5
     const offset = page ? page : 0
 
-    //  for filtering with queryString http://localhost:3000/api/movies?genre=Comedy&year=2003 (not finished yet)
     return Movie.findAndCountAll({
       include: [
-        { model: Producer, required: true },
-        { model: Genre, required: true },
+        {
+          model: Producer,
+          required: true,
+          where: producerFilter,
+        },
+        {
+          model: Genre,
+          required: true,
+          where: {
+            name: { [Op.substring]: `%${categoryFilter["name"]}%` },
+          },
+        },
       ],
+      where: movieFilter,
       limit: limit,
       offset: offset,
       order: [
@@ -46,7 +79,7 @@ class MovieController {
 
         result["self"] = `http://localhost:3000/api/?page=${offset}`
 
-        if (0 >= parseInt(offset) - 1 >= parseInt(offset)) {
+        if (0 > parseInt(offset) - 1 >= parseInt(offset)) {
           result["prev"] = "null"
         } else {
           result["prev"] = `http://localhost:3000/api/?page=${
