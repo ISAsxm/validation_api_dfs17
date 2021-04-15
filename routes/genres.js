@@ -1,10 +1,16 @@
-const GenreController = require('../controllers').GenreController;
+const GenreController = require("../controllers").GenreController
 
-let express = require ('express');
-let router = express.Router();
+let express = require("express")
+let router = express.Router()
 
-router.get('/genres', async(req, res, next) =>{
-    res.json(await GenreController.getAll())
-});
+router.post("/Genres", GenreController.create)
 
-module.exports = router;
+router.get("/Genres", GenreController.list)
+
+router.get("/Genres/:id", GenreController.retrieve)
+
+router.patch("/Genres/:id", GenreController.update)
+
+router.delete("/Genres/:id", GenreController.destroy)
+
+module.exports = router
