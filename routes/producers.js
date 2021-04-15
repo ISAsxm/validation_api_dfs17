@@ -1,6 +1,6 @@
 const ProducerController = require('../controllers').ProducerController
 
-let express = require("express")
+let express = require('express')
 let router = express.Router()
 
 router.post('/producers', ProducerController.create);

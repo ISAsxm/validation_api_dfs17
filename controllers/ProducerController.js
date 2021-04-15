@@ -7,15 +7,15 @@ class ProducerController {
       res.json(producer)
     }
 
-    async getOne (req, res, next) {
-        const producer = await Producer.findByPk(req.params.id)
-        if (producer === null) {
-          return res.status(404).json({
-            error: `Sorry, Producer with id ${req.params.id} doesn't exist in the database`,
-          })
-        }
-        return res.status(200).json(producer)
+  async getOne (req, res, next) {
+    const producer = await Producer.findByPk(req.params.id)
+      if (producer === null) {
+        return res.status(404).json({
+          error: `Sorry, Producer with id ${req.params.id} doesn't exist in the database`,
+        })
       }
+        return res.status(200).json(producer)
+    }
   
   async create (req, res, next) {
       const{firstName, lastName} = req.body;
@@ -49,8 +49,7 @@ class ProducerController {
       }
 
       res.status(404).json({'error': "Producer doesn't exist"})   
-  
-}
+  }
     
   async destroy (req, res, next) {
         const {id} = req.params;
@@ -60,10 +59,10 @@ class ProducerController {
           },
         })
         if (!producer) {
-          res.status(404).json(`Producer avec l'id ${id} n'existe pas en base`)
+          res.status(404).json(`Le producer avec l'id ${id} n'existe pas en base`)
         }
         res.status(204).end()
-        }
+  }
     
 }
 
