@@ -92,7 +92,7 @@ class MovieController {
       ],
     })
       .then((result) => {
-        const lastPage = parseInt(result.count) / parseInt(size)
+        const lastPage = Math.ceil(parseInt(result.count) / parseInt(size))
 
         result["self"] = `http://localhost:3000/api/movies/?page=${offset}`
 
