@@ -2,7 +2,7 @@ const Movie = require("../models").Movie
 const Producer = require("../models").Producer
 const Genre = require("../models").Genre
 const { Op } = require("sequelize")
-
+//const { body } = require('express-validator');
 class MovieController {
   async search(req, res, next) {
     //  for research on attribut title http://localhost:3000/api/movies/search?title=Happy Weekend
@@ -25,8 +25,12 @@ class MovieController {
   }
 
   async create(req, res, next) {
-    // console.log('COUCOU');
     const { title, description, year } = req.body
+    // const errors = validationResult(req)
+    // if (!errors.isEmpty()){
+    //   return res.status(400).json({ errors: errors.array()})
+    // }
+    
     if (title && description && year) {
       const movie = {
         title,
