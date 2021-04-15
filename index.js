@@ -5,6 +5,7 @@ const express = require('express');
 
 const models = require('./models');
 const routes = require('./routes');
+// const { body } = require('express-validator');
 
 function testConnectionToSequelizeDb(){
   models.sequelize

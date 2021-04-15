@@ -2,11 +2,11 @@ const Movie = require("../models").Movie
 const Producer = require("../models").Producer
 const Genre = require("../models").Genre
 const { Op } = require("sequelize")
-
+//const { body } = require('express-validator');
 class MovieController {
   async search(req, res, next) {
     //  for research on attribut title http://localhost:3000/api/movies/search?title=Happy Weekend
-    
+
     return Movie.findAll({
       include: [
         { model: Producer, required: true },
@@ -24,23 +24,26 @@ class MovieController {
       })
   }
 
-  async create (req, res, next) {
-    // console.log('COUCOU');
-    const{title, description, year} = req.body;
+  async create(req, res, next) {
+    const { title, description, year } = req.body
+    // const errors = validationResult(req)
+    // if (!errors.isEmpty()){
+    //   return res.status(400).json({ errors: errors.array()})
+    // }
+    
     if (title && description && year) {
       const movie = {
         title,
         description,
         year,
       }
-      return res.status(201).json(await Movie.create(movie));
+      return res.status(201).json(await Movie.create(movie))
     }
     return res.status(400).json({
       error: `Sorry, wrong datas send`,
     })
   }
 
-  
   async list(size, page, query) {
     //  for filtering with queryString http://localhost:3000/api/movies?page=0&size=5&firstName=Rosina&lastName=Jerred&name=Comedy&year=2003
     const queryString = { ...query }
@@ -93,7 +96,7 @@ class MovieController {
       ],
     })
       .then((result) => {
-        const lastPage = parseInt(result.count) / parseInt(size)
+        const lastPage = Math.ceil(parseInt(result.count) / parseInt(size))
 
         result["self"] = `http://localhost:3000/api/movies/?page=${offset}`
 
@@ -136,32 +139,31 @@ class MovieController {
     })
   }
 
-  async update (req,res, next) {
-    //console.log('COUCOU');
-    const {id} = req.params;
-    console.log(req.params);
-    const {title, description, year } = req.body;
-    if (!title && !description && !year){
-      res.status(400).end();
-        return
-    }
-    const updatedMovie = await Movie.update({title, description, year}, {
-      where: {
-        id
-      }
-    });
-    if(updatedMovie [0] === 1 ){
-      res.json(await Movie.findByPk(id))
+  async update(req, res, next) {
+    const { id } = req.params
+    const { title, description, year } = req.body
+    if (!title && !description && !year) {
+      res.status(400).end()
       return
+    }
+    const updatedMovie = await Movie.update(
+      { title, description, year },
+      {
+        where: {
+          id,
+        },
       }
+    )
+    if (updatedMovie[0] === 1) {
+      res.json(await Producer.findByPk(id.id))
+      return
+    }
 
-      res.status(404).json({'error': "Movie doesn't exist"})
+    res.status(404).json({ error: "Movie doesn't exist" })
   }
 
-
-  async destroy (req, res, next) {
-    const {id} = req.params;
-    
+  async destroy(req, res, next) {
+    const { id } = req.params
     const movie = await Movie.destroy({
       where: {
         /*id:*/ id,
@@ -171,8 +173,7 @@ class MovieController {
       res.status(404).json(`Le movie avec l'id ${id} n'existe pas en base`)
     }
     res.status(204).end()
-    }
-
+  }
 }
 
 module.exports = new MovieController()
