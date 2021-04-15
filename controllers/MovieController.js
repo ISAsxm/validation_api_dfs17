@@ -65,7 +65,7 @@ class MovieController {
     const sortSearchFields = ["sort", "desc"]
     const orderFilter = { order: [] }
     const groupFilter = { group: "" }
-    // expected output
+    // example of expected output
     // {
     //   order: [["title", "DESC"]]
     // }

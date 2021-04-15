@@ -3,14 +3,14 @@ const GenreController = require("../controllers").GenreController
 let express = require("express")
 let router = express.Router()
 
-router.post("/Genres", GenreController.create)
+router.get("/genres", GenreController.list)
 
-router.get("/Genres", GenreController.list)
+router.get("/genres/:id", GenreController.retrieve)
 
-router.get("/Genres/:id", GenreController.retrieve)
+router.post("/genres", GenreController.create)
 
-router.patch("/Genres/:id", GenreController.update)
+router.patch("/genres/:id", GenreController.update)
 
-router.delete("/Genres/:id", GenreController.destroy)
+router.delete("/genres/:id", GenreController.destroy)
 
 module.exports = router
