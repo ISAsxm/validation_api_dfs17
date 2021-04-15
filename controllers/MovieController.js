@@ -139,6 +139,7 @@ class MovieController {
   async update (req,res, next) {
     //console.log('COUCOU');
     const {id} = req.params;
+    console.log(req.params);
     const {title, description, year } = req.body;
     if (!title && !description && !year){
       res.status(400).end();
@@ -150,7 +151,7 @@ class MovieController {
       }
     });
     if(updatedMovie [0] === 1 ){
-      res.json(await Producer.findByPk(id))
+      res.json(await Movie.findByPk(id))
       return
       }
 
@@ -160,6 +161,7 @@ class MovieController {
 
   async destroy (req, res, next) {
     const {id} = req.params;
+    
     const movie = await Movie.destroy({
       where: {
         /*id:*/ id,
