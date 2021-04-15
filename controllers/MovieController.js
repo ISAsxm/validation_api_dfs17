@@ -30,7 +30,7 @@ class MovieController {
     // if (!errors.isEmpty()){
     //   return res.status(400).json({ errors: errors.array()})
     // }
-    
+
     if (title && description && year) {
       const movie = {
         title,
@@ -177,7 +177,7 @@ class MovieController {
       }
     )
     if (updatedMovie[0] === 1) {
-      res.json(await Producer.findByPk(id.id))
+      res.json(await Movie.findByPk(id))
       return
     }
 
