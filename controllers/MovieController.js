@@ -40,17 +40,51 @@ class MovieController {
     })
   }
 
-  async list(size, page) {
+  
+  async list(size, page, query) {
+    //  for filtering with queryString http://localhost:3000/api/movies?page=0&size=5&firstName=Rosina&lastName=Jerred&name=Comedy&year=2003
+    const queryString = { ...query }
+    const notSearchFields = ["size", "page"]
+    notSearchFields.forEach((f) => delete queryString[f])
+
+    const producerSearchFields = ["firstName", "lastName"]
+    const producerFilter = {}
+    producerSearchFields.forEach((f) => {
+      if (queryString[f]) {
+        producerFilter[f] = queryString[f]
+        delete queryString[f]
+      }
+    })
+    const categorySearchField = ["name"]
+    const categoryFilter = { name: "" }
+    categorySearchField.forEach((f) => {
+      if (queryString[f]) {
+        categoryFilter[f] = queryString[f]
+        delete queryString[f]
+      }
+    })
+    const movieFilter = queryString ? queryString : {}
+    console.log(movieFilter, categoryFilter, producerFilter)
     //  for paginate and limit set to http://localhost:3000/api/movies/?page=0&size=5 by default
     const limit = size ? +size : 5
     const offset = page ? page : 0
 
-    //  for filtering with queryString http://localhost:3000/api/movies?genre=Comedy&year=2003 (not finished yet)
     return Movie.findAndCountAll({
       include: [
-        { model: Producer, required: true },
-        { model: Genre, required: true },
+        {
+          model: Producer,
+          required: true,
+          where: producerFilter,
+        },
+        {
+          model: Genre,
+          required: true,
+          where: {
+            name: { [Op.substring]: `%${categoryFilter["name"]}%` },
+          },
+        },
       ],
+      where: movieFilter,
       limit: limit,
       offset: offset,
       order: [
@@ -61,12 +95,12 @@ class MovieController {
       .then((result) => {
         const lastPage = parseInt(result.count) / parseInt(size)
 
-        result["self"] = `http://localhost:3000/api/?page=${offset}`
+        result["self"] = `http://localhost:3000/api/movies/?page=${offset}`
 
-        if (0 >= parseInt(offset) - 1 >= parseInt(offset)) {
+        if (0 > parseInt(offset) - 1 >= parseInt(offset)) {
           result["prev"] = "null"
         } else {
-          result["prev"] = `http://localhost:3000/api/?page=${
+          result["prev"] = `http://localhost:3000/api/movies/?page=${
             parseInt(offset) - 1
           }`
         }
@@ -74,7 +108,7 @@ class MovieController {
         if (parseInt(offset) + 1 > lastPage) {
           result["next"] = "null"
         } else {
-          result["next"] = `http://localhost:3000/api/?page=${
+          result["next"] = `http://localhost:3000/api/movies/?page=${
             parseInt(offset) + 1
           }`
         }
@@ -82,7 +116,7 @@ class MovieController {
         if (parseInt(offset) == lastPage) {
           result["last"] = "null"
         } else {
-          result["last"] = `http://localhost:3000/api/?page=${lastPage}`
+          result["last"] = `http://localhost:3000/api/movies/?page=${lastPage}`
         }
 
         return result
@@ -122,19 +156,7 @@ class MovieController {
 
       res.status(404).json({'error': "Movie doesn't exist"})
   }
-  // async update(id, datas) {
-  //   return Movie.update(datas, {
-  //     where: {
-  //       id: id,
-  //     },
-  //   })
-  //     .then((Movie) => {
-  //       return Movie
-  //     })
-  //     .catch((err) => {
-  //       console.log(err)
-  //     })
-  // }
+
 
   async destroy (req, res, next) {
     const {id} = req.params;

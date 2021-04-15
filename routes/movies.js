@@ -7,8 +7,10 @@ router.post('/movies', MovieController.create);
 
 router.get('/movies/search', MovieController.search);
 
-router.get('/movies', async (req, res, next) => {
-    res.json(await MovieController.list(req.query.size, req.query.page))
+router.get("/movies", async (req, res, next) => {
+  res.json(
+    await MovieController.list(req.query.size, req.query.page, req.query)
+  )
 })
 
 router.get('/movies/:id', async (req, res, next) => {
