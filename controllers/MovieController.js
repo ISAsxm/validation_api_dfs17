@@ -41,11 +41,31 @@ class MovieController {
   }
 
   async list(size, page, query) {
-    //  for filtering with queryString http://localhost:3000/api/movies?page=0&size=5&firstName=Rosina&lastName=Jerred&name=Comedy&year=2003
     const queryString = { ...query }
     const notSearchFields = ["size", "page"]
     notSearchFields.forEach((f) => delete queryString[f])
 
+    // for group by and sort by with queryString http://localhost:3000/api/movies?sort=title&desc=year
+    const sortSearchFields = ["sort", "desc"]
+    const orderFilter = { order: [] }
+    const groupFilter = { group: "" }
+    // expected output
+    // {
+    //   order: [["title", "DESC"]]
+    // }
+    // {group: 'title'}
+    sortSearchFields.forEach((f) => {
+      if (queryString[f] && f === "sort") {
+        groupFilter.group = queryString[f]
+        delete queryString[f]
+      }
+      if (queryString[f] && f === "desc") {
+        orderFilter.order.push([queryString[f], "DESC"])
+        delete queryString[f]
+      }
+    })
+
+    //  for filtering with queryString http://localhost:3000/api/movies?page=0&size=5&firstName=Rosina&lastName=Jerred&name=Comedy&year=2003
     const producerSearchFields = ["firstName", "lastName"]
     const producerFilter = {}
     producerSearchFields.forEach((f) => {
@@ -63,10 +83,10 @@ class MovieController {
       }
     })
     const movieFilter = queryString ? queryString : {}
-    console.log(movieFilter, categoryFilter, producerFilter)
-    //  for paginate and limit set to http://localhost:3000/api/movies/?page=0&size=5 by default
+
+    //  for paginate and limit set to http://localhost:3000/api/movies?page=1&size=5 by default
     const limit = size ? +size : 5
-    const offset = page ? page : 0
+    const offset = page ? page : 1
 
     return Movie.findAndCountAll({
       include: [
@@ -86,20 +106,22 @@ class MovieController {
       where: movieFilter,
       limit: limit,
       offset: offset,
-      order: [
-        ["id", "DESC"],
-        ["year", "ASC"],
-      ],
+      order: orderFilter.order,
+      group: groupFilter.group,
     })
       .then((result) => {
-        const lastPage = Math.ceil(parseInt(result.count) / parseInt(size))
+        const lastPage = Math.ceil(
+          Array.isArray(result.count)
+            ? result.count.length
+            : parseInt(result.count) / parseInt(limit)
+        )
 
-        result["self"] = `http://localhost:3000/api/movies/?page=${offset}`
+        result["self"] = `http://localhost:3000/api/movies?page=${offset}`
 
-        if (0 > parseInt(offset) - 1 >= parseInt(offset)) {
+        if (0 >= parseInt(offset) - 1 >= parseInt(offset)) {
           result["prev"] = "null"
         } else {
-          result["prev"] = `http://localhost:3000/api/movies/?page=${
+          result["prev"] = `http://localhost:3000/api/movies?page=${
             parseInt(offset) - 1
           }`
         }
@@ -107,7 +129,7 @@ class MovieController {
         if (parseInt(offset) + 1 > lastPage) {
           result["next"] = "null"
         } else {
-          result["next"] = `http://localhost:3000/api/movies/?page=${
+          result["next"] = `http://localhost:3000/api/movies?page=${
             parseInt(offset) + 1
           }`
         }
@@ -115,7 +137,7 @@ class MovieController {
         if (parseInt(offset) == lastPage) {
           result["last"] = "null"
         } else {
-          result["last"] = `http://localhost:3000/api/movies/?page=${lastPage}`
+          result["last"] = `http://localhost:3000/api/movies?page=${lastPage}`
         }
 
         return result
