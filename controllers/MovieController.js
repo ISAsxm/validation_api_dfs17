@@ -17,10 +17,22 @@ class MovieController {
       },
     })
       .then((result) => {
+        if (result.length <= 0) {
+          return res
+            .status(404)
+            .json(
+              `Sorry, the films matching your query filters were not found in the database.`
+            )
+        }
         res.json(result)
       })
       .catch((err) => {
         console.log(err)
+        return res
+          .status(400)
+          .json(
+            `An error occurred while processing your request, please try again after verifying the request parameters provided`
+          )
       })
   }
 
@@ -40,12 +52,12 @@ class MovieController {
       return res.status(201).json(await Movie.create(movie))
     }
     return res.status(400).json({
-      error: `Sorry, wrong datas send`,
+      error: `An error occurred while processing your request, please check the data set entered`,
     })
   }
 
-  async list(size, page, query) {
-    const queryString = { ...query }
+  async list(req, res, next) {
+    const queryString = { ...req.query }
     const notSearchFields = ["size", "page"]
     notSearchFields.forEach((f) => delete queryString[f])
 
@@ -89,8 +101,8 @@ class MovieController {
     const movieFilter = queryString ? queryString : {}
 
     //  for paginate and limit set to http://localhost:3000/api/movies?page=1&size=5 by default
-    const limit = size ? +size : 5
-    const offset = page ? page : 1
+    const limit = req.query.size ? +req.query.size : 5
+    const offset = req.query.page ? req.query.page : 1
 
     return Movie.findAndCountAll({
       include: [
@@ -114,6 +126,13 @@ class MovieController {
       group: groupFilter.group,
     })
       .then((result) => {
+        if (result.rows.length <= 0) {
+          return res
+            .status(404)
+            .json(
+              `Sorry, the films matching your query filters were not found in the database.`
+            )
+        }
         const lastPage = Math.ceil(
           Array.isArray(result.count)
             ? result.count.length
@@ -144,28 +163,55 @@ class MovieController {
           result["last"] = `http://localhost:3000/api/movies?page=${lastPage}`
         }
 
-        return result
+        return res.json(result)
       })
       .catch((err) => {
         console.log(err)
+        return res
+          .status(400)
+          .json(
+            `An error occurred while processing your request, please try again after verifying the request parameters provided`
+          )
       })
   }
 
-  async retrieve(id) {
+  async retrieve(req, res, next) {
     return Movie.findOne({
-      where: { id: id },
+      where: { id: req.params.id },
       include: [
         { model: Producer, required: true },
         { model: Genre, required: true },
       ],
     })
+      .then((result) => {
+        if (result === null) {
+          return res
+            .status(404)
+            .json(
+              `Sorry, the movie matching the id ${req.params.id} was not found in the database.`
+            )
+        }
+        return res.json(result)
+      })
+      .catch((err) => {
+        console.log(err)
+        return res
+          .status(400)
+          .json(
+            `An error occurred while processing your request, please try again after verifying the request parameters provided`
+          )
+      })
   }
 
   async update(req, res, next) {
     const { id } = req.params
     const { title, description, year } = req.body
     if (!title && !description && !year) {
-      res.status(400).end()
+      res
+        .status(400)
+        .json(
+          `An error occurred while processing your request, please check the data set entered.`
+        )
       return
     }
     const updatedMovie = await Movie.update(
@@ -181,7 +227,9 @@ class MovieController {
       return
     }
 
-    res.status(404).json({ error: "Movie doesn't exist" })
+    res.status(404).json({
+      error: `Sorry, the movie matching the id ${req.params.id} was not found in the database.`,
+    })
   }
 
   async destroy(req, res, next) {
@@ -192,7 +240,11 @@ class MovieController {
       },
     })
     if (!movie) {
-      res.status(404).json(`Le movie avec l'id ${id} n'existe pas en base`)
+      res
+        .status(404)
+        .json(
+          `Sorry, the movie matching the id ${req.params.id} was not found in the database.`
+        )
     }
     res.status(204).end()
   }
