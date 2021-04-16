@@ -4,22 +4,23 @@ class ProducerValidator {
   createProducerValidation() {
     return [
       body("firstName")
+        .notEmpty()
+        .withMessage("This field is required, please provide a valid entry")
         .trim()
-        .escape()
-        .not()
-        .isEmpty()
-        .withMessage("This field is required, please provide a valid entry"),
+        .escape(),
       body("lastName")
+        .notEmpty()
+        .withMessage("This field is required, please provide a valid entry")
         .trim()
-        .escape()
-        .not()
-        .isEmpty()
-        .withMessage("This field is required, please provide a valid entry"),
+        .escape(),
     ]
   }
 
   updateProducerValidation() {
-    return [body("firstName").trim().escape(), body("lastName").trim().escape()]
+    return [
+      body("firstName").trim().escape().optional({ nullable: true }),
+      body("lastName").trim().escape().optional({ nullable: true }),
+    ]
   }
 
   validate(req, res, next) {

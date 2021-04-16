@@ -24,7 +24,7 @@ class MovieController {
               `Sorry, the films matching your query filters were not found in the database.`
             )
         }
-        res.json(result)
+        return res.json(result)
       })
       .catch((err) => {
         console.log(err)
@@ -54,20 +54,20 @@ class MovieController {
         )
     }
 
-    if (title && description && year) {
-      const movie = {
-        title,
-        description,
-        year,
-        producerId,
-        genreId,
-      }
-      const newMovie = await Movie.create(movie)
-      return res.status(201).json(newMovie)
+    if (!title && !description && !year && !producerId && !genreId) {
+      return res.status(400).json({
+        error: `An error occurred while processing your request, please check the data set entered`,
+      })
     }
-    return res.status(400).json({
-      error: `An error occurred while processing your request, please check the data set entered`,
-    })
+    const movie = {
+      title,
+      description,
+      year,
+      producerId,
+      genreId,
+    }
+    const newMovie = await Movie.create(movie)
+    return res.status(201).json(newMovie)
   }
 
   async list(req, res, next) {
@@ -114,7 +114,7 @@ class MovieController {
     })
     const movieFilter = queryString ? queryString : {}
 
-    //  for paginate and limit set to http://localhost:3000/api/movies?page=0&size=5 by default
+    //  for paginate and limit set to http://localhost:3000/api/movies?page=1&size=5 by default
     const limit = req.query.size ? +req.query.size : 5
     const offset = req.query.page ? req.query.page : 0
 
@@ -232,17 +232,16 @@ class MovieController {
 
   async update(req, res, next) {
     const { id } = req.params
-    const { title, description, year } = req.body
-    if (!title && !description && !year) {
-      res
+    const { title, description, year, producerId, genreId } = req.body
+    if (!title && !description && !year && !producerId && !genreId) {
+      return res
         .status(400)
         .json(
           `An error occurred while processing your request, please check the data set entered.`
         )
-      return
     }
     const updatedMovie = await Movie.update(
-      { title, description, year },
+      { title, description, year, producerId, genreId },
       {
         where: {
           id,
@@ -250,11 +249,10 @@ class MovieController {
       }
     )
     if (updatedMovie[0] === 1) {
-      res.json(await Movie.findByPk(id))
-      return
+      return res.json(await Movie.findByPk(id))
     }
 
-    res.status(404).json({
+    return res.status(404).json({
       error: `Sorry, the movie matching the id ${req.params.id} was not found in the database.`,
     })
   }
@@ -263,17 +261,17 @@ class MovieController {
     const { id } = req.params
     const movie = await Movie.destroy({
       where: {
-        /*id:*/ id,
+        id,
       },
     })
     if (!movie) {
-      res
+      return res
         .status(404)
         .json(
           `Sorry, the movie matching the id ${req.params.id} was not found in the database.`
         )
     }
-    res.status(204).end()
+    return res.status(204).end()
   }
 }
 

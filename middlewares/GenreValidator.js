@@ -4,11 +4,10 @@ class GenreValidator {
   createGenreValidation() {
     return [
       body("name")
+        .notEmpty()
+        .withMessage("This field is required, please provide a valid entry")
         .trim()
-        .escape()
-        .not()
-        .isEmpty()
-        .withMessage("This field is required, please provide a valid entry"),
+        .escape(),
     ]
   }
 
