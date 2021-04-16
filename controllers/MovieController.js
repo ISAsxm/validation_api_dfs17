@@ -82,7 +82,7 @@ class MovieController {
     const groupFilter = { group: "" }
     // example of expected output
     // {
-    //   order: [["title", "DESC"]]
+    //   order: [["year", "DESC"]]
     // }
     // {group: 'title'}
     sortSearchFields.forEach((f) => {
@@ -96,7 +96,7 @@ class MovieController {
       }
     })
 
-    //  for filtering with queryString http://localhost:3000/api/movies?page=0&size=5&firstName=Rosina&lastName=Jerred&name=Comedy&year=2003
+    //  for filtering with queryString http://localhost:3000/api/movies?page=0&size=5&firstName=Rosina&lastName=Jerred&genre=Comedy&year=2003
     const producerSearchFields = ["firstName", "lastName"]
     const producerFilter = {}
     producerSearchFields.forEach((f) => {
@@ -105,8 +105,8 @@ class MovieController {
         delete queryString[f]
       }
     })
-    const categorySearchField = ["name"]
-    const categoryFilter = { name: "" }
+    const categorySearchField = ["genre"]
+    const categoryFilter = { genre: "" }
     categorySearchField.forEach((f) => {
       if (queryString[f]) {
         categoryFilter[f] = queryString[f]
@@ -114,10 +114,10 @@ class MovieController {
       }
     })
     const movieFilter = queryString ? queryString : {}
-
-    //  for paginate and limit set to http://localhost:3000/api/movies?page=1&size=5 by default
+    console.log(categoryFilter)
+    //  for paginate and limit set to http://localhost:3000/api/movies?page=0&size=5 by default
     const limit = req.query.size ? +req.query.size : 5
-    const offset = req.query.page ? req.query.page : 1
+    const offset = req.query.page ? req.query.page : 0
 
     return Movie.findAndCountAll({
       include: [
@@ -130,7 +130,7 @@ class MovieController {
           model: Genre,
           required: true,
           where: {
-            name: { [Op.substring]: `%${categoryFilter["name"]}%` },
+            name: { [Op.substring]: `%${categoryFilter["genre"]}%` },
           },
         },
       ],
