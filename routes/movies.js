@@ -8,19 +8,11 @@
  ************************************************************************
  */
 
-const { body } = require("express-validator")
 const MovieController = require("../controllers").MovieController
+const MovieValidator = require("../middlewares").MovieValidatorMiddleware
 
 let express = require("express")
 let router = express.Router()
-
-router.post(
-  "/movies",
-  body("title").trim().escape().not().isEmpty().withMessage("Invalid datas"),
-  body("description").trim().escape().not().isEmpty(),
-  body("year").trim().escape().isDate({ format: "YYYY" }).not().isEmpty(),
-  MovieController.create
-)
 
 router.get("/movies/search", MovieController.search)
 
@@ -28,7 +20,19 @@ router.get("/movies", MovieController.list)
 
 router.get("/movies/:id", MovieController.retrieve)
 
-router.patch("/movies/:id", MovieController.update)
+router.post(
+  "/movies",
+  MovieValidator.createMovieValidation(),
+  MovieValidator.validate,
+  MovieController.create
+)
+
+router.patch(
+  "/movies/:id",
+  MovieValidator.updateMovieValidation(),
+  MovieValidator.validate,
+  MovieController.update
+)
 
 router.delete("/movies/:id", MovieController.destroy)
 

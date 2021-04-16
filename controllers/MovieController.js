@@ -38,10 +38,7 @@ class MovieController {
 
   async create(req, res, next) {
     const { title, description, year, producerId, genreId } = req.body
-    // const errors = validationResult(req)
-    // if (!errors.isEmpty()){
-    //   return res.status(400).json({ errors: errors.array()})
-    // }
+
     if (!(await Producer.findByPk(producerId))) {
       return res
         .status(400)
