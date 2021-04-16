@@ -63,7 +63,6 @@ class MovieController {
         genreId,
       }
       const newMovie = await Movie.create(movie)
-      console.log(newMovie)
       return res.status(201).json(newMovie)
     }
     return res.status(400).json({
@@ -96,9 +95,9 @@ class MovieController {
       }
     })
 
-    //  for filtering with queryString http://localhost:3000/api/movies?page=0&size=5&firstName=Rosina&lastName=Jerred&genre=Comedy&year=2003
-    const producerSearchFields = ["firstName", "lastName"]
-    const producerFilter = {}
+    //  for filtering with queryString http://localhost:3000/api/movies?page=0&size=5&producer=Jerred&genre=Comedy&year=2003
+    const producerSearchFields = ["producer"]
+    const producerFilter = { producer: "" }
     producerSearchFields.forEach((f) => {
       if (queryString[f]) {
         producerFilter[f] = queryString[f]
@@ -114,7 +113,7 @@ class MovieController {
       }
     })
     const movieFilter = queryString ? queryString : {}
-    console.log(categoryFilter)
+
     //  for paginate and limit set to http://localhost:3000/api/movies?page=0&size=5 by default
     const limit = req.query.size ? +req.query.size : 5
     const offset = req.query.page ? req.query.page : 0
@@ -124,7 +123,20 @@ class MovieController {
         {
           model: Producer,
           required: true,
-          where: producerFilter,
+          where: {
+            [Op.or]: [
+              {
+                firstName: {
+                  [Op.substring]: `%${producerFilter["producer"]}%`,
+                },
+              },
+              {
+                lastName: {
+                  [Op.substring]: `%${producerFilter["producer"]}%`,
+                },
+              },
+            ],
+          },
         },
         {
           model: Genre,
@@ -164,7 +176,7 @@ class MovieController {
           }`
         }
 
-        if (parseInt(offset) + 1 > lastPage) {
+        if (lastPage === 1 || parseInt(offset) + 1 > lastPage) {
           result["next"] = "null"
         } else {
           result["next"] = `http://localhost:3000/api/movies?page=${
@@ -172,8 +184,8 @@ class MovieController {
           }`
         }
 
-        if (parseInt(offset) == lastPage) {
-          result["last"] = "null"
+        if (0 >= parseInt(offset) >= lastPage) {
+          result["last"] = `http://localhost:3000/api/movies?page=${offset}`
         } else {
           result["last"] = `http://localhost:3000/api/movies?page=${lastPage}`
         }
