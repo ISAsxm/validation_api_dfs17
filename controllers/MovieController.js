@@ -37,19 +37,37 @@ class MovieController {
   }
 
   async create(req, res, next) {
-    const { title, description, year } = req.body
+    const { title, description, year, producerId, genreId } = req.body
     // const errors = validationResult(req)
     // if (!errors.isEmpty()){
     //   return res.status(400).json({ errors: errors.array()})
     // }
+    if (!(await Producer.findByPk(producerId))) {
+      return res
+        .status(400)
+        .json(
+          `Sorry, the producer matching the id ${producerId} was not found in the database.`
+        )
+    }
+    if (!(await Genre.findByPk(genreId))) {
+      return res
+        .status(400)
+        .json(
+          `Sorry, the genre matching the id ${genreId} was not found in the database.`
+        )
+    }
 
     if (title && description && year) {
       const movie = {
         title,
         description,
         year,
+        producerId,
+        genreId,
       }
-      return res.status(201).json(await Movie.create(movie))
+      const newMovie = await Movie.create(movie)
+      console.log(newMovie)
+      return res.status(201).json(newMovie)
     }
     return res.status(400).json({
       error: `An error occurred while processing your request, please check the data set entered`,
